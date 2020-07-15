@@ -215,6 +215,8 @@ android {
 
 }
 
+def LIBTORRENT4J_VERSION='1.2.3.0'
+
 dependencies {
     implementation project(':react-native-permissions')
     implementation project(':rn-fetch-blob')
@@ -242,6 +244,12 @@ dependencies {
     implementation project(':react-native-vector-icons')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
+
+    implementation "org.libtorrent4j:libtorrent4j:$LIBTORRENT4J_VERSION"
+    implementation "org.libtorrent4j:libtorrent4j-android-arm:$LIBTORRENT4J_VERSION"
+    implementation "org.libtorrent4j:libtorrent4j-android-arm64:$LIBTORRENT4J_VERSION"
+    implementation "org.libtorrent4j:libtorrent4j-android-x86:$LIBTORRENT4J_VERSION"
+    implementation "org.libtorrent4j:libtorrent4j-android-x86_64:$LIBTORRENT4J_VERSION"
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {

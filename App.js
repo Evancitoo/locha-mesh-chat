@@ -10,6 +10,8 @@ import NativationService from './src/utils/navigationService';
 import Bitcoin from './src/utils/Bitcoin';
 import Database from './src/database';
 
+//  const Libp2p = require('libp2p');
+
 
 const WrappedStack = ({ t }) => (
   <RouteContainer
