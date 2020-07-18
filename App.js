@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import { Provider } from 'react-redux';
 import { translate } from 'react-i18next';
-import { YellowBox } from 'react-native';
+import { YellowBox, NativeModules } from 'react-native';
 import { Root } from 'native-base';
 import RouteContainer from './src/routes';
 import store from './src/store';
@@ -12,6 +12,7 @@ import Database from './src/database';
 
 //  const Libp2p = require('libp2p');
 
+console.log("el webo mio", NativeModules.DHTModule.startSession());
 
 const WrappedStack = ({ t }) => (
   <RouteContainer

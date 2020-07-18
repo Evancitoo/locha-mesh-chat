@@ -33,6 +33,7 @@ import com.facebook.react.PackageList;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
+import DTH.DTHPackage;
 import DeviceInfo.DeviceInfoPackage;
 import LocalNotification.LocalNotificationPackage;
 import RNCoapClient.CoapClientPackage;
@@ -66,6 +67,7 @@ public class MainApplication extends Application implements ReactApplication {
            packages.add(new RNUdpServerPackage());
            packages.add(new LocalNotificationPackage());
            packages.add(new WifiPackage());
+           packages.add(new DTHPackage());
 
           return packages;
         }
