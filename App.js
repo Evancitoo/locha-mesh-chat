@@ -12,7 +12,7 @@ import Database from './src/database';
 
 //  const Libp2p = require('libp2p');
 
-console.log("el webo mio", NativeModules.DHTModule.startSession());
+NativeModules.DHTModule.startSession()
 
 const WrappedStack = ({ t }) => (
   <RouteContainer
