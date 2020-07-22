@@ -28,15 +28,14 @@ import DeviceInfo.Utils;
 public  class DHTModule extends ReactContextBaseJavaModule {
 
     private final ReactApplicationContext reactContext;
-    private SessionManager sessionManager;
+//    private SessionManager sessionManager;
     private final static String TAG = "DHT_MODULE" ;
 
-    final String magnet = "magnet:?xt=urn:btih:737d38ed01da1df727a3e0521a6f2c457cb812de&dn=HOME+-+a+film+by+Yann+Arthus-Bertrand+%282009%29+%5BEnglish%5D+%5BHD+MP4%5D&tr=udp%3A%2F%2Ftracker.leechers-paradise.org%3A6969&tr=udp%3A%2F%2Ftracker.zer0day.to%3A1337&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A6969";
-
+    private final String magnet = "magnet:?xt=urn:btih:ab803d390cfdee02097a6464f135cbd59eb28794&dn=The.Mentalist.S03E19.1080p.HEVC.x265-MeGusta%5Beztv.io%5D.mkv%5Beztv%5D&tr=udp%3A%2F%2Ftracker.coppersurfer.tk%3A80&tr=udp%3A%2F%2Fglotorrents.pw%3A6969%2Fannounce&tr=udp%3A%2F%2Ftracker.opentrackr.org%3A1337%2Fannounce&tr=udp%3A%2F%2Fexodus.desync.com%3A6969";
     public DHTModule(@Nonnull ReactApplicationContext reactContext ) {
         super(reactContext);
         this.reactContext = reactContext;
-        sessionManager = new SessionManager();
+//        sessionManager = new SessionManager();
 
     }
 
@@ -50,47 +49,68 @@ public  class DHTModule extends ReactContextBaseJavaModule {
             AlertType type = alert.type();
             if (type == AlertType.LISTEN_SUCCEEDED) {
                 ListenSucceededAlert a = (ListenSucceededAlert) alert;
-                Log.i(TAG,a.message());
+                Log.i(TAG,"AlertType.LISTEN_SUCCEEDED"+a.message());
             }
             if (type == AlertType.LISTEN_FAILED) {
                 ListenFailedAlert a = (ListenFailedAlert) alert;
-                Log.i(TAG, a.message());
+                Log.i(TAG, "AlertType.LISTEN_FAILED"+ a.message());
             }
             if (type == AlertType.DHT_PUT) {
                 DhtPutAlert a = (DhtPutAlert) alert;
-                Log.i(TAG , a.message());
+                Log.i(TAG , "AlertType.DHT_PUT" + a.message());
             }
         }
     };
 
     @ReactMethod
     public void startSession() {
+        Thread SesionThread = new Thread(new Runnable() {
 
-        try {
-            SettingsPack settingsPack =  new SettingsPack();
-            settingsPack.listenInterfaces("[::1]:43567");
+            @Override
+            public void run() {
+                try {
+                    SessionManager sessionManager = new SessionManager();
+                    final CountDownLatch signal = new CountDownLatch(1);
 
-            SessionParams params = new SessionParams(settingsPack);
+                    SettingsPack settingsPack = new SettingsPack();
+                    settingsPack.listenInterfaces("[0.0.0.0]:6881");
+                    settingsPack.enableDht(true);
 
-            if( sessionManager.isRunning() != true){
-                sessionManager.addListener(mainListener);
-                sessionManager.start();
+                    SessionParams params = new SessionParams(settingsPack);
+
+
+                    if (sessionManager.isRunning() != true) {
+                        sessionManager.addListener(mainListener);
+                        sessionManager.start(params);
+                    }
+                    waitForNodesInDHT(sessionManager);
+
+                    Log.i(TAG, "is running:  " + sessionManager.isDhtRunning());
+                    byte[] data = sessionManager.fetchMagnet(magnet, 10);
+                    if (data != null) {
+                        System.out.println(Entry.bdecode(data));
+                        Sha1Hash dios =  new Sha1Hash("976b9c53254817ff2cb466a38d1f9d15528795a8");
+                        ArrayList<TcpEndpoint>  peers =   sessionManager.dhtGetPeers(dios, 10);
+                        Log.i(TAG,"persss" + peers.toString());
+                    } else {
+                        System.out.println("Failed to retrieve the magnet");
+                    }
+                } catch(InterruptedException e){
+                    Log.i(TAG, "execute this Exception" + e.toString());
+                }
             }
 
-            waitForNodesInDHT(sessionManager);
-            byte[] data = sessionManager.fetchMagnet(magnet, 30);
-            TorrentInfo ti = TorrentInfo.bdecode(data);
-            int i = 0;
-            while (i < 20) {
-                TimeUnit.SECONDS.sleep(1);
-                Log.i(TAG,sessionManager.find(ti.infoHash()).status().state() + " state");
-                Log.i(TAG,sessionManager.find(ti.infoHash()).status().progress() * 100 + " progress");
-                i++;
-            }
-        } catch (InterruptedException e){
-            Log.i(TAG, e.toString());
-        }
+        });
 
+        SesionThread.run();
+    }
+
+
+    private static void get_peers(SessionManager sm, String s) {
+        String sha1 = s.split(" ")[1];
+        Log.i(TAG,"Waiting a max of 20 seconds to get peers for key: " + new Sha1Hash(sha1) );
+       // ArrayList<TcpEndpoint> peers = sm.dhtGetPeers(new Sha1Hash(sha1), 10);
+       // Log.i(TAG, peers.toString());
     }
 
 
@@ -102,10 +122,10 @@ public  class DHTModule extends ReactContextBaseJavaModule {
             @Override
             public void run() {
                 long nodes = s.stats().dhtNodes();
-                if (nodes >= 10) {
+                if (nodes >= 1) {
                     System.out.println("DHT contains " + nodes + " nodes");
                     signal.countDown();
-                    timer.cancel();
+//                    timer.cancel();
                 }
             }
         }, 0, 1000);

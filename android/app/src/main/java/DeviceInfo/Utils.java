@@ -2,11 +2,13 @@ package DeviceInfo;
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
+import java.math.BigInteger;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
 import java.util.Collections;
 import java.util.List;
+import java.util.Scanner;
 
 public class Utils {
 
@@ -122,5 +124,20 @@ public class Utils {
         } catch (Exception ex) { } // for now eat exceptions
         return "";
     }
+
+    public String toHex(String arg) {
+        String str = arg;
+        StringBuffer sb = new StringBuffer();
+        //Converting string to character array
+        char ch[] = str.toCharArray();
+        for(int i = 0; i < ch.length; i++) {
+            String hexString = Integer.toHexString(ch[i]);
+            sb.append(hexString);
+        }
+        String result = sb.toString();
+
+        return result;
+    }
+
 
 }
