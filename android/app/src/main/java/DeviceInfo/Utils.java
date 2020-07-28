@@ -1,4 +1,8 @@
 package DeviceInfo;
+import android.content.Context;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
+
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.FileInputStream;
@@ -125,6 +129,13 @@ public class Utils {
         return "";
     }
 
+
+    /**
+     * it's used to convert string to hex
+     *
+     * @param arg  text to convert
+     * @return String
+     */
     public String toHex(String arg) {
         String str = arg;
         StringBuffer sb = new StringBuffer();
@@ -137,6 +148,29 @@ public class Utils {
         String result = sb.toString();
 
         return result;
+    }
+
+
+    /**
+     * Get the network info.
+     *
+     * @param context the Context.
+     * @return the active NetworkInfo.
+     */
+    public static NetworkInfo getNetworkInfo(Context context) {
+        ConnectivityManager cm = (ConnectivityManager) context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        return cm.getActiveNetworkInfo();
+    }
+
+    /**
+     * Check if there is any connectivity at all.
+     *
+     * @param context the Context.
+     * @return true if we are connected to a network, false otherwise.
+     */
+    public static boolean isConnected(Context context) {
+        NetworkInfo info = Utils.getNetworkInfo(context);
+        return (info != null && info.isAvailable() && info.isConnected());
     }
 
 

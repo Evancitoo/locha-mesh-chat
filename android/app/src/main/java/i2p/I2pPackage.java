@@ -1,4 +1,4 @@
-package DTH;
+package i2p;
 
 import com.facebook.react.ReactPackage;
 import com.facebook.react.bridge.NativeModule;
@@ -9,9 +9,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import DeviceInfo.DeviceInfoModule;
+import upd.RNUdpServerModule;
 
-public class DTHPackage implements ReactPackage {
+public class I2pPackage implements ReactPackage {
     @Override
     public List<ViewManager> createViewManagers(ReactApplicationContext reactContext) {
         return Collections.emptyList();
@@ -22,8 +22,9 @@ public class DTHPackage implements ReactPackage {
             ReactApplicationContext reactContext) {
         List<NativeModule> modules = new ArrayList<>();
 
-        modules.add(new DHTModule(reactContext));
+        modules.add(new I2pModule(reactContext));
 
         return modules;
     }
 }
+

@@ -12,7 +12,10 @@ import Database from './src/database';
 
 //  const Libp2p = require('libp2p');
 
-NativeModules.DHTModule.startSession();
+
+NativeModules.i2p.startRouter((err, sussesfull) => {
+  console.log(err, sussesfull);
+});
 
 const WrappedStack = ({ t }) => (
   <RouteContainer

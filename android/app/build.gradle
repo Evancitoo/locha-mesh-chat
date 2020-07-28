@@ -215,7 +215,7 @@ android {
 
 }
 
-def LIBTORRENT4J_VERSION='1.2.3.0'
+def I2P_VERSION='0.9.46'
 
 dependencies {
     implementation project(':react-native-permissions')
@@ -239,17 +239,15 @@ dependencies {
     implementation project(':react-native-fs')
     implementation project(':react-native-image-crop-picker')
     implementation 'org.eclipse.californium:californium-core:2.2.1'
+     implementation "net.i2p:router:$I2P_VERSION"
+    implementation "net.i2p:i2p:$I2P_VERSION"
+    implementation "net.i2p.client:mstreaming:$I2P_VERSION"
+    implementation "net.i2p.client:streaming:$I2P_VERSION"
     implementation project(':react-native-gesture-handler')
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation project(':react-native-vector-icons')
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "com.facebook.react:react-native:+"  // From node_modules
-
-    implementation "org.libtorrent4j:libtorrent4j:$LIBTORRENT4J_VERSION"
-    implementation "org.libtorrent4j:libtorrent4j-android-arm:$LIBTORRENT4J_VERSION"
-    implementation "org.libtorrent4j:libtorrent4j-android-arm64:$LIBTORRENT4J_VERSION"
-    implementation "org.libtorrent4j:libtorrent4j-android-x86:$LIBTORRENT4J_VERSION"
-    implementation "org.libtorrent4j:libtorrent4j-android-x86_64:$LIBTORRENT4J_VERSION"
 
     implementation "androidx.swiperefreshlayout:swiperefreshlayout:1.0.0"
     debugImplementation("com.facebook.flipper:flipper:${FLIPPER_VERSION}") {
