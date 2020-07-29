@@ -17,15 +17,25 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
+import com.lochameshchat.R;
+
+import net.i2p.router.Job;
+import net.i2p.router.Router;
+import net.i2p.router.RouterContext;
+import net.i2p.router.tasks.ShutdownHook;
+
 public class RouterService extends Service {
 
 
     private final static  String TAG = "RouterService";
-
+    private final Object _stateLock = new Object();
     private static I2pModule mModuleManager;
     private CountDownTimer mServiceTimer = null;
     private CountDownTimer mMissingConnectionTimer = null;
     private ConnectivityManager connectivity;
+    private static final String EXTRA_RESTART = "restar";
+    private Thread starterThread;
+    private RouterContext routerContext;
 
     @Override
     public void onCreate() {
@@ -40,10 +50,13 @@ public class RouterService extends Service {
             ((NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE)).createNotificationChannel(channel);
 
             Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                    .setContentTitle("Service")
-                    .setContentText("is service").build();
+                    .setContentTitle("Locha Mesh  is running in the background")
+                    .setSmallIcon(R.mipmap.ic_launcher)
+                    .setPriority(NotificationManager.IMPORTANCE_MIN)
+                    .setCategory(Notification.CATEGORY_SERVICE)
+                    .build();
 
-            startForeground(1, notification);
+            startForeground(233, notification);
         }
     }
 
@@ -57,24 +70,53 @@ public class RouterService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        connectivity = (ConnectivityManager) getBaseContext()
-                .getSystemService(Context.CONNECTIVITY_SERVICE);
 
-        Log.i(TAG, "Executed here");
-        // set check timer onCreate service that check status for ten seconds each one second
-        // and restart if finish
-        mServiceTimer = new CountDownTimer(10000, 1000) {
-            public void onTick(long millisUntilFinished) {
-                checkConnectionStatus();
-            };
-            public void onFinish() {
-                mServiceTimer.start();
-            }
-        };
-        mServiceTimer.start();
+        boolean restart = intent != null && intent.getBooleanExtra(EXTRA_RESTART, false);
 
+        Log.d(TAG, "onStartCommand: " + restart);
+
+        Init init = new Init(this);
+        init.initialize();
+
+        synchronized(_stateLock) {
+            starterThread = new Thread( new Starter());
+            starterThread.start();
+        }
         return START_STICKY;
     }
+
+
+    private class Starter implements Runnable {
+
+        public void run() {
+            Log.d(TAG ," starter thread");
+            //Util.d(MARKER + this + " JBigI speed test started");
+            //NativeBigInteger.main(null);
+            //Util.d(MARKER + this + " JBigI speed test finished, launching router");
+
+            // Launch the router!
+            // TODO Store this somewhere instead of relying on global context?
+            Router r = new Router();
+            r.setUPnPScannerCallback(new SSDPLocker(RouterService.this));
+            r.runRouter();
+
+            synchronized (_stateLock){
+                routerContext = r.getContext();
+                if(routerContext == null){
+                    throw new IllegalStateException("Router has no context?");
+                }
+
+                routerContext.router().setKillVMOnEnd(false);
+
+
+            }
+            Log.d(TAG ," running router");
+
+        }
+    }
+
+
+
 
 
     @Override

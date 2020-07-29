@@ -239,10 +239,11 @@ dependencies {
     implementation project(':react-native-fs')
     implementation project(':react-native-image-crop-picker')
     implementation 'org.eclipse.californium:californium-core:2.2.1'
-     implementation "net.i2p:router:$I2P_VERSION"
+    implementation "net.i2p:router:$I2P_VERSION"
     implementation "net.i2p:i2p:$I2P_VERSION"
     implementation "net.i2p.client:mstreaming:$I2P_VERSION"
     implementation "net.i2p.client:streaming:$I2P_VERSION"
+    implementation 'net.i2p.android.ext:floatingactionbutton:1.10.1'
     implementation project(':react-native-gesture-handler')
     implementation 'com.squareup.okhttp3:okhttp:3.11.0'
     implementation project(':react-native-vector-icons')
