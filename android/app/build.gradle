@@ -218,6 +218,10 @@ android {
 def I2P_VERSION='0.9.46'
 
 dependencies {
+
+    implementation project(':lib:client')
+    implementation project(':lib:helper')
+    implementation project(path: ':routerjars', configuration: 'routerjars')
     implementation project(':react-native-permissions')
     implementation project(':rn-fetch-blob')
     implementation project(':@react-native-community_async-storage')

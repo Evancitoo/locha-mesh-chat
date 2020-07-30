@@ -12,6 +12,7 @@ buildscript {
         googlePlayServicesVisionVersion = "16.2.0"
     }
     repositories {
+        mavenLocal()
         google()
         jcenter()
     }
