@@ -1,6 +1,7 @@
 package i2p;
 
 import android.content.Context;
+import android.util.Log;
 
 //import net.i2p.BOB.BOB;
 import net.i2p.I2PAppContext;
@@ -42,6 +43,7 @@ class LoadClientsJob extends JobImpl {
     private final Notifications _notif;
     private DaemonThread _addressbook;
     //private BOB _bob;
+    private static final String TAG = "LoadClientsJob";
 
     /** this is the delay to load (and start) the clients. */
     private static final long LOAD_DELAY = 60*1000;
@@ -85,16 +87,16 @@ class LoadClientsJob extends JobImpl {
             while (!getContext().router().isRunning()) {
                 try { Thread.sleep(1000); } catch (InterruptedException ie) { return; }
                 if (!getContext().router().isAlive()) {
-                    Util.e("Router stopped before i2ptunnel could start");
+                    Log.e(TAG,"Router stopped before i2ptunnel could start");
                     return;
                 }
             }
-            Util.d("Starting i2ptunnel");
+            Log.d(TAG,"Starting i2ptunnel");
             TunnelControllerGroup tcg = TunnelControllerGroup.getInstance(getContext());
             try {
                 tcg.startup();
                 int sz = tcg.getControllers().size();
-                Util.d("i2ptunnel started " + sz + " clients");
+                Log.d(TAG,"i2ptunnel started " + sz + " clients");
 
                 // no use starting these until i2ptunnel starts
                 RouterContext ctx = getContext();
@@ -106,7 +108,7 @@ class LoadClientsJob extends JobImpl {
                 _addressbook.setDaemon(true);
                 _addressbook.start();
             } catch (IllegalArgumentException iae) {
-                Util.e("i2ptunnel failed to start", iae);
+                Log.e(TAG, "i2ptunnel failed to start", iae);
             }
 
         }
@@ -114,7 +116,7 @@ class LoadClientsJob extends JobImpl {
 
     private class ClientShutdownHook implements Runnable {
         public void run() {
-            Util.d("client shutdown hook");
+            Log.d(TAG,"client shutdown hook");
             // i2ptunnel registers its own hook
             // StatSummarizer registers its own hook
             // NewsFetcher registers its own hook
