@@ -221,7 +221,8 @@ dependencies {
 
     implementation project(':lib:client')
     implementation project(':lib:helper')
-    implementation project(path: ':routerjars', configuration: 'routerjars')
+//    implementation project(path: ':routerjars', configuration: 'routerjars')
+    implementation 'com.androidplot:androidplot-core:1.4.1'
     implementation project(':react-native-permissions')
     implementation project(':rn-fetch-blob')
     implementation project(':@react-native-community_async-storage')

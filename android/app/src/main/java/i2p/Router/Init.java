@@ -1,12 +1,19 @@
-package i2p;
+package i2p.Router;
 
 
 import android.content.Context;
 import android.util.Log;
 
+import net.i2p.router.RouterContext;
+import net.i2p.stat.Rate;
+import net.i2p.stat.RateStat;
 import net.i2p.util.FileUtil;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.StringTokenizer;
+import java.util.concurrent.CopyOnWriteArrayList;
 
 class Init {
 
@@ -38,4 +45,5 @@ class Init {
             }
         }
     }
+
 }

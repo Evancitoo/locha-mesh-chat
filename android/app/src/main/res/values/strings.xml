@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">LochaMeshChat</string>
+    <string name="news_last_updated">News last updated %s ago</string>
+    <string name="news_last_checked">News last checked %s ago</string>
+    <string name="news_updated">News Updated</string>
+    <string name="view_news">Touch to view latest I2P news</string>
 </resources>

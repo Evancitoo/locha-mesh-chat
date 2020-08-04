@@ -1,4 +1,4 @@
-package i2p;
+package i2p.Router;
 
 import android.content.Context;
 import android.util.Log;
@@ -6,9 +6,6 @@ import android.util.Log;
 //import net.i2p.BOB.BOB;
 import net.i2p.I2PAppContext;
 import net.i2p.addressbook.DaemonThread;
-import net.i2p.android.apps.NewsFetcher;
-import net.i2p.android.router.util.Notifications;
-import net.i2p.android.router.util.Util;
 import net.i2p.i2ptunnel.TunnelControllerGroup;
 import net.i2p.router.Job;
 import net.i2p.router.JobImpl;
@@ -17,6 +14,9 @@ import net.i2p.router.startup.RouterAppManager;
 import net.i2p.util.I2PAppThread;
 
 import java.io.IOException;
+
+import i2p.Util.Notifications;
+import i2p.apps.NewsFetcher;
 
 /**
  * Load the clients we want.

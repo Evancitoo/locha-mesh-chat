@@ -1,4 +1,4 @@
-package i2p;
+package i2p.Router;
 
 import android.app.Notification;
 import android.app.NotificationChannel;
@@ -19,10 +19,10 @@ import androidx.core.app.NotificationCompat;
 
 import com.lochameshchat.R;
 
-import net.i2p.router.Job;
 import net.i2p.router.Router;
 import net.i2p.router.RouterContext;
-import net.i2p.router.tasks.ShutdownHook;
+
+import i2p.I2pModule;
 
 public class RouterService extends Service {
 
@@ -134,27 +134,27 @@ public class RouterService extends Service {
         mModuleManager = moduleManager;
     }
 
-    public void checkConnectionStatus(){
-        // verify connection status and set
-        boolean mConnected = false;
-        String mName = null;
-        if (connectivity != null && connectivity.getActiveNetworkInfo() != null) {
-            NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
-            if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE){
-                mName = activeNetwork.getTypeName();
-                mConnected = true;
-            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
-                mName = activeNetwork.getTypeName();
-                mConnected = true;
-            };
-            stopMissingConnectionTimer();
-        } else {
-            startMissingConnectionTimer();
-        }
-        if (mModuleManager != null) {
-            mModuleManager.setModuleParams(mConnected, mName);
-        }
-    }
+//    public void checkConnectionStatus(){
+//        // verify connection status and set
+//        boolean mConnected = false;
+//        String mName = null;
+//        if (connectivity != null && connectivity.getActiveNetworkInfo() != null) {
+//            NetworkInfo activeNetwork = connectivity.getActiveNetworkInfo();
+//            if (activeNetwork.getType() == ConnectivityManager.TYPE_MOBILE){
+//                mName = activeNetwork.getTypeName();
+//                mConnected = true;
+//            } else if (activeNetwork.getType() == ConnectivityManager.TYPE_WIFI) {
+//                mName = activeNetwork.getTypeName();
+//                mConnected = true;
+//            };
+//            stopMissingConnectionTimer();
+//        } else {
+//            startMissingConnectionTimer();
+//        }
+//        if (mModuleManager != null) {
+//            mModuleManager.setModuleParams(mConnected, mName);
+//        }
+//    }
 
     private void startMissingConnectionTimer() {
         if (mMissingConnectionTimer == null) {

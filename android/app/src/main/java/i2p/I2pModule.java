@@ -3,19 +3,18 @@ package i2p;
 import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 
 import com.facebook.react.bridge.Callback;
 import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
 
 import javax.annotation.Nonnull;
 
 import DeviceInfo.Utils;
+import i2p.Router.RouterService;
 
 public class I2pModule extends ReactContextBaseJavaModule {
 
