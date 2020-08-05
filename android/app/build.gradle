@@ -219,8 +219,8 @@ def I2P_VERSION='0.9.46'
 
 dependencies {
 
-    implementation project(':lib:client')
-    implementation project(':lib:helper')
+//    implementation project(':lib:client')
+//    implementation project(':lib:helper')
 //    implementation project(path: ':routerjars', configuration: 'routerjars')
     implementation 'com.androidplot:androidplot-core:1.4.1'
     implementation project(':react-native-permissions')
