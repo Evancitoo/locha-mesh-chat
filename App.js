@@ -12,10 +12,16 @@ import Database from './src/database';
 
 //  const Libp2p = require('libp2p');
 
+setTimeout(() => {
+  NativeModules.i2p.init();
+}, 3000);
 
-NativeModules.i2p.startRouter((err, sussesfull) => {
-  console.log(err, sussesfull);
-});
+setTimeout(() => {
+  NativeModules.i2p.startRouter((err, sussesfull) => {
+    console.log(err, sussesfull);
+  });
+}, 6000);
+
 
 const WrappedStack = ({ t }) => (
   <RouteContainer

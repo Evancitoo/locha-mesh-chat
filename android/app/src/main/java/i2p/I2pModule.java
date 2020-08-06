@@ -78,4 +78,10 @@ public class I2pModule extends ReactContextBaseJavaModule {
 
     }
 
+
+    @ReactMethod public void init(){
+        InitializateI2P _init = new InitializateI2P(context);
+        _init.init();
+    }
+
 }

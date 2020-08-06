@@ -105,6 +105,11 @@ public class RouterService extends Service {
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
 
+        Log.d(TAG , " onStart called"
+                + " Intent is: " + intent
+                + " Flags is: " + flags
+                + " ID is: " + startId);
+
         boolean restart = intent != null && intent.getBooleanExtra(EXTRA_RESTART, false);
 
         Log.d(TAG, "onStartCommand: " + restart);
@@ -136,7 +141,7 @@ public class RouterService extends Service {
             Router r = new Router();
             r.setUPnPScannerCallback(new SSDPLocker(RouterService.this));
             r.runRouter();
-
+            Log.i(TAG, "router is running  "+ r.isRunning() ) ;
             synchronized (_stateLock){
                 routerContext = r.getContext();
                 if(routerContext == null){
@@ -205,10 +210,10 @@ public class RouterService extends Service {
 
             @Override
             public void run() {
-                Log.i(TAG, "text one" + text);
-                Log.i(TAG, "text two" + bigText);
+                Log.i(TAG, "text one: " + text);
+                Log.i(TAG, "text two: " + bigText);
             }
-        }, 10000, 5000);
+        }, 10000, 10000);
 
 
     }

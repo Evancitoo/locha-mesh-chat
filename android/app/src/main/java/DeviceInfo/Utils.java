@@ -1,10 +1,13 @@
 package DeviceInfo;
 import android.content.Context;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 
 import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.File;
 import java.io.FileInputStream;
 import java.math.BigInteger;
 import java.net.Inet4Address;
@@ -173,5 +176,27 @@ public class Utils {
         return (info != null && info.isAvailable() && info.isConnected());
     }
 
+
+    public static String getFileDir(Context context) {
+        // This needs to be changed so that we can have an alternative place
+        File f = context.getFilesDir();
+        if (f == null) {
+            f = context.getFilesDir();
+        }
+        return f.getAbsolutePath();
+    }
+
+
+    public static String getOurVersion(Context ctx) {
+        PackageManager pm = ctx.getPackageManager();
+        String us = ctx.getPackageName();
+        try {
+            PackageInfo pi = pm.getPackageInfo(us, 0);
+            if (pi.versionName != null)
+                return pi.versionName;
+        } catch (Exception e) {
+        }
+        return "??";
+    }
 
 }

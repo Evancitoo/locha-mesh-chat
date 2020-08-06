@@ -84,6 +84,7 @@ class LoadClientsJob extends JobImpl {
         public String getName() { return "Start I2P Tunnel"; }
 
         public void runJob() {
+            Log.i(TAG, "!!!!!!!!!!!!!!!!!!!!!!!!! dios meoooo  " + getContext().router().isRunning());
             while (!getContext().router().isRunning()) {
                 try { Thread.sleep(1000); } catch (InterruptedException ie) { return; }
                 if (!getContext().router().isAlive()) {
@@ -91,7 +92,7 @@ class LoadClientsJob extends JobImpl {
                     return;
                 }
             }
-            Log.d(TAG,"Starting i2ptunnel");
+            Log.i(TAG,"Starting i2ptunnel");
             TunnelControllerGroup tcg = TunnelControllerGroup.getInstance(getContext());
             try {
                 tcg.startup();
