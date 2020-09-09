@@ -1,4 +1,6 @@
-package io.locha.p2p.runtime;
+package io.locha.p2p.service;
+
+import io.locha.p2p.runtime.RuntimeEvents;
 
 import android.util.Log;
 
@@ -10,35 +12,33 @@ import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.uimanager.events.EventDispatcher;
 
-public class EventsReceiver implements ChatServiceEvents {
-    ReactApplicationContext reactContext;
-
-    private static EventsReceiver INSTANCE = null;
+public class EventsDispatcher implements RuntimeEvents {
     private static final String TAG = "EventsReceiver";
+    private static EventsDispatcher INSTANCE = null;
+    private ReactApplicationContext reactContext;
 
-    private EventsReceiver(ReactApplicationContext context) {
-        reactContext = context;
-    }
+    private EventsDispatcher() { }
 
     /**
-     * Get instance of the EventReceivers.
+     * Function returns class instance it, doesn't needs parameters.
+     *
+     * @return EventsDispatcher instance.
      */
-    public static EventsReceiver init(ReactApplicationContext context) {
+    public static EventsDispatcher getInstance() {
         if (INSTANCE == null) {
-            INSTANCE = new EventsReceiver(context);
+            INSTANCE = new EventsDispatcher();
         }
 
         return INSTANCE;
     }
 
     /**
-     * Function returns class instance it, doesn't needs parameters.
-     *
-     * @return EventsReceiver instance.
+     * Set the ReactApplicationContext for this object.
      */
-    public static EventsReceiver get() {
-        return INSTANCE;
+    public void setApplicationContext(ReactApplicationContext context) {
+        this.reactContext = context;
     }
 
     @Override public void onNewMessage(String contents) {
@@ -96,7 +96,7 @@ public class EventsReceiver implements ChatServiceEvents {
     }
 
     @Override public void onBannedPeer(String peer) {
-        Log.d(TAG, String.format("bannedPeer: peer=%s"));
+        Log.d(TAG, String.format("bannedPeer: peer=%s", peer));
         sendEvent(this.reactContext, "bannedPeer", peer);
     }
 

@@ -19,7 +19,7 @@ package io.locha.p2p.runtime;
 /**
  * Runtime Events
  */
-public interface ChatServiceEvents {
+public interface RuntimeEvents {
     /**
      * New message received
      *

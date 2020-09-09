@@ -14,7 +14,7 @@
 
 //! # runtime
 //!
-//! This module contains the ChatService class JNI interface.
+//! This module contains the Runtime class JNI interface.
 
 use std::num::NonZeroU32;
 use std::{io, panic, sync::Arc};
@@ -22,23 +22,24 @@ use std::{io, panic, sync::Arc};
 use jni::{
     objects::{GlobalRef, JClass, JObject, JString, JValue},
     signature::{JavaType, Primitive},
-    sys::{jboolean, jbyteArray, jstring, JNI_FALSE, JNI_TRUE},
+    sys::{jboolean, jbyteArray, jstring, JNI_TRUE},
     Executor, JNIEnv,
 };
 
-use lazy_static::lazy_static;
-
 use log::trace;
-use parking_lot::RwLock;
+
+use async_std::task;
 
 use libp2p::core::connection::PendingConnectionError;
 use libp2p::core::ConnectedPoint;
 use libp2p::identity::secp256k1;
 
+use locha_p2p::discovery::DiscoveryConfig;
 use locha_p2p::identity::Identity;
 use locha_p2p::runtime::config::RuntimeConfig;
 use locha_p2p::runtime::events::RuntimeEvents;
 use locha_p2p::runtime::Runtime;
+use locha_p2p::upnp::Upnp;
 use locha_p2p::{Multiaddr, PeerId};
 
 use crate::util::jni_cache::{chat_service_events, classes_refs};
@@ -46,11 +47,7 @@ use crate::util::{unwrap_exc_or, unwrap_exc_or_default, unwrap_jni};
 use crate::{JniError, JniErrorKind};
 
 const CHAT_SERVICE_EVENTS_HANDLER_FIELD_TYPE: &str =
-    "Lio/locha/p2p/runtime/ChatServiceEvents;";
-
-lazy_static! {
-    static ref RUNTIME: RwLock<Runtime> = RwLock::new(Runtime::new());
-}
+    "Lio/locha/p2p/runtime/RuntimeEvents;";
 
 #[inline(always)]
 fn java_msg_error<S: Into<String>>(msg: S) -> JniError {
@@ -90,18 +87,28 @@ fn java_get_events_handler_field(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_io_locha_p2p_runtime_ChatService_nativeStart(
+pub extern "system" fn Java_io_locha_p2p_runtime_Runtime_nativeNew(
     env: JNIEnv,
     class: JClass,
     secret_key: jbyteArray,
+    attempt_upnp: jboolean,
 ) {
     trace!("nativeStart");
 
     let res = panic::catch_unwind(|| {
-        let mut runtime = RUNTIME.write();
-
         let secret_key = java_bytearray_to_secretkey(&env, secret_key)?;
         let identity = Identity::from(secret_key);
+        let attempt_upnp = attempt_upnp == JNI_TRUE;
+
+        let mut discovery = DiscoveryConfig::new();
+
+        discovery
+            .use_mdns(true)
+            .id(identity.id())
+            .allow_ipv4_private(false)
+            .allow_ipv4_shared(false)
+            .allow_ipv6_link_local(false)
+            .allow_ipv6_ula(true);
 
         let config = RuntimeConfig {
             identity,
@@ -111,21 +118,27 @@ pub extern "system" fn Java_io_locha_p2p_runtime_ChatService_nativeStart(
             channel_cap: 20,
             heartbeat_interval: 10,
 
-            use_mdns: true,
-            allow_ipv4_private: false,
-            allow_ipv4_shared: false,
-            allow_ipv6_link_local: false,
-            allow_ipv6_ula: true,
+            discovery,
         };
 
         let events_handler = java_get_events_handler_field(&env, class)?;
         let executor =
             env.get_java_vm().map(|vm| Executor::new(Arc::new(vm)))?;
-        let events_proxy = RuntimeEventsProxy::new(executor, events_handler);
+        let events_proxy =
+            Box::new(RuntimeEventsProxy::new(executor, events_handler));
 
-        runtime
-            .start(config, Box::new(events_proxy))
-            .expect("couldn't start runtime");
+        let (runtime, runtime_task) =
+            Runtime::new(config, events_proxy, attempt_upnp).unwrap();
+
+        task::spawn(runtime_task);
+
+        if attempt_upnp {
+            let (upnp, upnp_task) = Upnp::new();
+            task::spawn(upnp_task);
+            task::block_on(runtime.enable_upnp(upnp)).unwrap();
+        }
+
+        env.set_rust_field(class, "handle", runtime)?;
 
         Ok(())
     });
@@ -134,60 +147,46 @@ pub extern "system" fn Java_io_locha_p2p_runtime_ChatService_nativeStart(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_io_locha_p2p_runtime_ChatService_nativeStop(
+pub extern "system" fn Java_io_locha_p2p_runtime_Runtime_nativeStop(
     env: JNIEnv,
-    _: JClass,
+    class: JClass,
 ) {
     let res = panic::catch_unwind(|| {
-        let mut runtime = RUNTIME.write();
-        runtime.stop().expect("could not stop runtime");
-
+        let runtime: Runtime = env.take_rust_field(class, "handle")?;
+        task::block_on(runtime.stop());
         Ok(())
     });
     unwrap_exc_or_default(&env, res)
 }
 
 #[no_mangle]
-pub extern "system" fn Java_io_locha_p2p_runtime_ChatService_nativeIsStarted(
+pub extern "system" fn Java_io_locha_p2p_runtime_Runtime_nativeGetPeerId(
     env: JNIEnv,
-    _: JClass,
-) -> jboolean {
-    let res = panic::catch_unwind(|| {
-        Ok(if RUNTIME.read().is_started() {
-            JNI_TRUE
-        } else {
-            JNI_FALSE
-        })
-    });
-    unwrap_exc_or_default(&env, res)
-}
-
-#[no_mangle]
-pub extern "system" fn Java_io_locha_p2p_runtime_ChatService_nativeGetPeerId(
-    env: JNIEnv,
-    _: JClass,
+    class: JClass,
 ) -> jstring {
     let res = panic::catch_unwind(|| {
-        let runtime = RUNTIME.read();
-
-        env.new_string(runtime.identity().id().to_string())
+        let runtime = env.get_rust_field::<_, _, Runtime>(class, "handle")?;
+        let peer_id = task::block_on(runtime.peer_id());
+        env.new_string(peer_id.to_string())
     });
 
     unwrap_exc_or(&env, res, env.new_string("").unwrap()).into_inner()
 }
 
 #[no_mangle]
-pub extern "system" fn Java_io_locha_p2p_runtime_ChatServiceModule_nativeDial(
+pub extern "system" fn Java_io_locha_p2p_runtime_Runtime_nativeDial(
     env: JNIEnv,
-    _: JClass,
+    class: JClass,
     multiaddr: JString,
 ) {
     let res = panic::catch_unwind(|| {
+        let runtime = env.get_rust_field::<_, _, Runtime>(class, "handle")?;
+
         let multiaddr: String = env.get_string(multiaddr)?.into();
         let multiaddr: Multiaddr =
             multiaddr.parse().expect("invalid multiaddr");
-        let runtime = RUNTIME.read();
-        runtime.dial(multiaddr).expect("could not dial address");
+
+        task::block_on(runtime.dial(multiaddr));
 
         Ok(())
     });
@@ -195,26 +194,23 @@ pub extern "system" fn Java_io_locha_p2p_runtime_ChatServiceModule_nativeDial(
 }
 
 #[no_mangle]
-pub extern "system" fn Java_io_locha_p2p_runtime_ChatServiceModule_nativeSendMessage(
+pub extern "system" fn Java_io_locha_p2p_runtime_Runtime_nativeSendMessage(
     env: JNIEnv,
-    _: JClass,
+    class: JClass,
     contents: JString,
 ) {
     trace!("nativeSendMessage");
 
     let res = panic::catch_unwind(|| {
-        let runtime = RUNTIME.read();
+        let runtime = env.get_rust_field::<_, _, Runtime>(class, "handle")?;
         let contents: String = env.get_string(contents)?.into();
-
-        runtime
-            .send_message(contents)
-            .expect("could not send message");
+        task::block_on(runtime.send_message(contents));
         Ok(())
     });
     unwrap_exc_or_default(&env, res)
 }
 
-// An interface to the ChatServiceEvents class
+// An interface to the RuntimeEvents class
 pub struct RuntimeEventsProxy {
     exec: Executor,
     events: GlobalRef,
